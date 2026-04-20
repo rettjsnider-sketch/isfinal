@@ -1,0 +1,159 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mini Wordle</title>
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        text-align: center;
+        background: #121213;
+        color: white;
+    }
+    h1 { margin-top: 20px; }
+
+    .grid {
+        display: grid;
+        grid-template-columns: repeat(5, 60px);
+        gap: 5px;
+        justify-content: center;
+        margin: 20px auto;
+    }
+
+    .tile {
+        width: 60px;
+        height: 60px;
+        border: 2px solid #3a3a3c;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 24px;
+        font-weight: bold;
+        text-transform: uppercase;
+    }
+
+    .correct { background: #538d4e; }
+    .present { background: #b59f3b; }
+    .absent { background: #3a3a3c; }
+
+    .keyboard {
+        max-width: 500px;
+        margin: 10px auto;
+    }
+
+    .key {
+        padding: 10px;
+        margin: 3px;
+        border: none;
+        background: #818384;
+        color: white;
+        cursor: pointer;
+        border-radius: 4px;
+    }
+
+    .key:hover { background: #565758; }
+</style>
+</head>
+<body>
+
+<h1>Mini Wordle</h1>
+
+<div id="grid"></div>
+
+<div class="keyboard" id="keyboard"></div>
+
+<script>
+const words = ["apple","grape","chair","table","stone","light","brain","plant","train","world"];
+const secret = words[Math.floor(Math.random() * words.length)];
+
+let currentRow = 0;
+let currentGuess = "";
+
+const grid = document.getElementById("grid");
+
+// Create grid (5 rows x 5 columns)
+for (let i = 0; i < 25; i++) {
+    const tile = document.createElement("div");
+    tile.className = "tile";
+    grid.appendChild(tile);
+}
+
+const tiles = document.querySelectorAll(".tile");
+
+// Create keyboard
+const keyboardLayout = "QWERTYUIOPASDFGHJKLZXCVBNM";
+const keyboardDiv = document.getElementById("keyboard");
+
+keyboardLayout.split("").forEach(letter => {
+    const btn = document.createElement("button");
+    btn.textContent = letter;
+    btn.className = "key";
+    btn.onclick = () => handleInput(letter);
+    keyboardDiv.appendChild(btn);
+});
+
+// Add enter + delete
+const enterBtn = document.createElement("button");
+enterBtn.textContent = "Enter";
+enterBtn.className = "key";
+enterBtn.onclick = submitGuess;
+keyboardDiv.appendChild(enterBtn);
+
+const delBtn = document.createElement("button");
+delBtn.textContent = "Del";
+delBtn.className = "key";
+delBtn.onclick = deleteLetter;
+keyboardDiv.appendChild(delBtn);
+
+// Handle typing
+function handleInput(letter) {
+    if (currentGuess.length < 5 && currentRow < 5) {
+        currentGuess += letter.toLowerCase();
+        updateGrid();
+    }
+}
+
+function deleteLetter() {
+    currentGuess = currentGuess.slice(0, -1);
+    updateGrid();
+}
+
+function updateGrid() {
+    for (let i = 0; i < 5; i++) {
+        const index = currentRow * 5 + i;
+        tiles[index].textContent = currentGuess[i] || "";
+    }
+}
+
+function submitGuess() {
+    if (currentGuess.length !== 5) return;
+
+    for (let i = 0; i < 5; i++) {
+        const index = currentRow * 5 + i;
+        const letter = currentGuess[i];
+
+        if (secret[i] === letter) {
+            tiles[index].classList.add("correct");
+        } else if (secret.includes(letter)) {
+            tiles[index].classList.add("present");
+        } else {
+            tiles[index].classList.add("absent");
+        }
+    }
+
+    if (currentGuess === secret) {
+        setTimeout(() => alert("You win!"), 100);
+        return;
+    }
+
+    currentRow++;
+    currentGuess = "";
+
+    if (currentRow === 5) {
+        setTimeout(() => alert("Game over! Word was: " + secret), 100);
+    }
+}
+</script>
+
+</body>
+</html>
